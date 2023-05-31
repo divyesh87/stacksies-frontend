@@ -8,22 +8,24 @@ function ClaimTab({ activeAcc }) {
     const tokenContract = useRef(null)
     const [hasClaimed, sethasClaimed] = useState(true)
     useEffect(() => {
-
-        async function main() {
-            try {
-                if (!activeAcc) return
-                tokenContract.current = new web3.eth.Contract(config.tokenAbi, config.tokenAddress);
-
-                const hasClaimed = await tokenContract.current.methods.claimList(activeAcc).call()
-                sethasClaimed(hasClaimed)
-
-            } catch (e) {
-                console.log(e);
-            }
-        }
-
         main()
     }, [activeAcc])
+
+    window?.ethereum.on('chainChanged', main)
+
+    async function main() {
+        console.log("run");
+        try {
+            if (!activeAcc) return
+            tokenContract.current = new web3.eth.Contract(config.tokenAbi, config.tokenAddress);
+
+            const hasClaimed = await tokenContract.current.methods.claimList(activeAcc).call()
+            sethasClaimed(hasClaimed)
+
+        } catch (e) {
+            console.log(e);
+        }
+    }
 
     async function claimTokens() {
         try {
@@ -72,7 +74,11 @@ function ClaimTab({ activeAcc }) {
                     Click claim to claim your tokens
                 </Typography>
                 <Button onClick={claimTokens} disabled={hasClaimed} variant="outlined" style={{ color: "white", borderColor: "white", borderWidth: "0.1rem" }}>
-                    {hasClaimed ? "Already claimed" : "Claim"}
+                    {
+                        !activeAcc ? "Please connect wallet to check eligibility" : (
+                            hasClaimed ? "Already claimed" : "Claim"
+                        )
+                    }
                 </Button>
             </div>
 
